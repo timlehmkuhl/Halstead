@@ -1,0 +1,1 @@
+halstead(zeichen, anzahl) ::= "<zeichen> <anzahl>"
