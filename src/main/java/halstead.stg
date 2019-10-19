@@ -1,1 +1,4 @@
-halstead(zeichen, anzahl) ::= "<zeichen> <anzahl>"
+halstead(zeichen, anzahl) ::= "<zeichen>  <anzahl>"
+operand(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
+operator(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
+ignore(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
