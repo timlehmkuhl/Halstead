@@ -1,5 +1,9 @@
 import org.junit.Before;
 import org.junit.Test;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -13,7 +17,8 @@ public class UnitTest {
     final static Map<String, Integer> mapOPERATOR = new TreeMap<>();
     final static Map<String, Integer> mapOPERANT = new TreeMap<>();
     final static Map<String, Integer> mapIGNORE = new HashMap<>();
-
+    final String FILE = "G:\\InfProjekte\\Halstead\\src\\main\\quelldateien\\Beispiel.c";
+    final String EVAL = "G:\\InfProjekte\\Halstead\\src\\main\\quelldateien\\eval1.c";
 
 
 
@@ -21,13 +26,11 @@ public class UnitTest {
     public void testOperator() throws IOException {
         Map<String, Integer> testMap = new TreeMap<>();
         RunLexer r = new RunLexer();
-        r.start();
+        r.start(FILE);
         String str = r.operatorStr;
         String strA[] = str.split("\n");
         for(String s : strA){
-         //   System.err.println(s.substring(0,s.indexOf("_")));
           testMap.put(s.substring(0,s.indexOf("_")), Integer.parseInt( s.substring(s.indexOf("_")+1)));
-         // System.out.println(s);
         }
         for(Map.Entry<String, Integer>  e: testMap.entrySet()){
            System.out.println(e.getKey() + " " + e.getValue());
@@ -35,14 +38,13 @@ public class UnitTest {
 
         assertTrue(testMap.equals(mapOPERATOR));
 
-      //  System.out.println(str);
     }
 
     @Test
     public void testOperant() throws IOException {
         Map<String, Integer> testMap = new TreeMap<>();
         RunLexer r = new RunLexer();
-        r.start();
+        r.start(FILE);
         String str = r.operandStr;
 
         String strA[] = str.split("\n");
@@ -54,6 +56,37 @@ public class UnitTest {
         }
 
         assertTrue(testMap.equals(mapOPERANT));
+
+    }
+
+    @Test
+    public void testIgnore() throws IOException {
+        RunLexer r = new RunLexer();
+        r.start(FILE);
+        assertEquals("", r.ignoreStr);
+    }
+
+    @Test
+    public void parameter() throws IOException {
+        RunLexer r = new RunLexer();
+        r.start(EVAL);
+        ST st = r.parameter();
+        assertEquals(22, st.getAttribute("n1"));
+        assertEquals(30, st.getAttribute("n2"));
+        assertEquals(157, st.getAttribute("N1"));
+        assertEquals(122, st.getAttribute("N2"));
+    }
+
+    @Test
+    public void metriken() throws IOException {
+        RunLexer r = new RunLexer();
+        r.start(EVAL);
+        ST st = r.metriken();
+        assertEquals(279, (int)st.getAttribute("N"));
+        assertEquals(52, (int)st.getAttribute("n"));
+        assertEquals(1590.42, (double)st.getAttribute("V"), 0.01);
+        assertEquals(44.73, (double)st.getAttribute("D"), 0.01);
+        assertEquals(71144.91, (double)st.getAttribute("E"), 0.01);
 
     }
 

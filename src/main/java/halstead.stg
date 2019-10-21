@@ -1,4 +1,9 @@
-halstead(zeichen, anzahl) ::= "<zeichen>  <anzahl>"
-operand(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
-operator(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
-ignore(zeichen, anzahl) ::= "<zeichen>_<anzahl>"
+halstead(token, anzahl) ::= "<token>  <anzahl>"
+operand(token, anzahl) ::= "<token>_<anzahl>"
+operator(token, anzahl) ::= "<token>_<anzahl>"
+ignore(token, anzahl) ::= "<token>_<anzahl>"
+listall(operatoren, operanden) ::= "----Operatoren------<\n><\n><operatoren><\n>----Operanden------<\n><\n><operanden>"
+
+parameter(n1, n2, N1, N2) ::= "Parameter:<\n>n1: <n1><\n>n2: <n2><\n>N1: <N1><\n>N2: <N2><\n>"
+
+metriken(N, n, V, D, E) ::= "Metriken:<\n>N: <N><\n>n: <n><\n>V: <V><\n>D: <D><\n>E: <E><\n>"

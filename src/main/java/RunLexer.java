@@ -11,38 +11,32 @@ import java.util.stream.Collectors;
 
 public class RunLexer {
 
-      String operandStr = "";
+    String operandStr = "";
      String operatorStr = "";
      String ignoreStr = "";
+
+    Map<String, Integer> mapOPERAND = new TreeMap<>();
+    Map<String, Integer> mapOPERATOR = new TreeMap<>();
+    Map<String, Integer> mapIGNORE = new TreeMap<>();
 
     public RunLexer() {
     }
 
-    public  String run(String str, boolean file) throws IOException {
+    public  void run(String str, boolean file) throws IOException {
 
         STGroup templates = new STGroupFile("G:\\InfProjekte\\Halstead\\src\\main\\java\\halstead.stg");
         CharStream input = null;
-        // Pick an input stream (filename from commandline or stdin)
+
         if (file) input = CharStreams.fromFileName(str);
         else input = CharStreams.fromString(str);
 
         Halstead lex = new Halstead(input);
         Token t=null;
         String ret = "";
-        Map<String, Integer> mapAll = new TreeMap<>();
-
-        Map<String, Integer> mapOPERAND = new TreeMap<>();
-        Map<String, Integer> mapOPERATOR = new TreeMap<>();
-        Map<String, Integer> mapIGNORE = new TreeMap<>();
-
-
-        int v = 0;
 
         do {
             t = lex.nextToken();
 
-            v = mapAll.get(t.getText()) != null ? mapAll.get(t.getText()) : 0;
-            mapAll.put(t.getText(), v+1);
             if(t.getType() == Halstead.OPERAND) {
                 int count = mapOPERAND.get(t.getText()) != null ? mapOPERAND.get(t.getText()) : 0;
                 mapOPERAND.put(t.getText(), count+1);
@@ -58,52 +52,83 @@ public class RunLexer {
 
         } while ( t.getType()!=Token.EOF );
 
-      /*  mapstr = mapAll.keySet().stream()
-                .mapAll(key -> key + "=" + mapAll.get(key))
-                .collect(Collectors.joining(", ", "{", "}"));*/
-          //  mapAll.remove("<EOF>");
-          for(Map.Entry<String, Integer>  e: mapAll.entrySet()){
-            ST st = templates.getInstanceOf("halstead");
-            st.add("zeichen", e.getKey());
-            st.add("anzahl", e.getValue());
-            ret +=  st.render() + "\n";
-        }
+
+        //Fill StringTemplate
+
         for(Map.Entry<String, Integer>  e: mapOPERAND.entrySet()){
             ST st = templates.getInstanceOf("operand");
-            st.add("zeichen", e.getKey());
+            st.add("token", e.getKey());
             st.add("anzahl", e.getValue());
             operandStr +=  st.render() + "\n";
         }
         for(Map.Entry<String, Integer>  e: mapOPERATOR.entrySet()){
             ST st = templates.getInstanceOf("operator");
-            st.add("zeichen", e.getKey());
+            st.add("token", e.getKey());
             st.add("anzahl", e.getValue());
             operatorStr +=  st.render() + "\n";
         }
         for(Map.Entry<String, Integer>  e: mapIGNORE.entrySet()){
             ST st = templates.getInstanceOf("ignore");
-            st.add("zeichen", e.getKey());
+            st.add("token", e.getKey());
             st.add("anzahl", e.getValue());
             ignoreStr +=  st.render() + "\n";
         }
-       // System.out.println(ret);
-        return ret;//  ret.length() > 0 ? ret.substring(0,ret.length()-1) : ret;
+
     }
 
-    public void start() throws IOException {
-        //   String s = run("G:\\InfProjekte\\Halstead\\src\\main\\java\\input.txt", true);
-        // String s = run("G:\\InfProjekte\\Halstead\\src\\main\\quelldateien\\ggt1.c", true);
-        String s = run("G:\\InfProjekte\\Halstead\\src\\main\\quelldateien\\Beispiel.c", true);
-      /*  System.out.println("--------Operand--------");
-        System.out.println(operandStr);
-        System.out.println("--------Operator--------");
-        System.out.println(operatorStr);
-        System.out.println("--------Ignore--------");
-        System.out.println(ignoreStr);
-        // System.err.print(s);*/
+    public void start(String file) throws IOException {
+        run(file, true);
+
     }
-   /* public static void main(String[] args) throws IOException {
-            start();
-    }*/
+
+    public ST parameter(){
+        STGroup templates = new STGroupFile("G:\\InfProjekte\\Halstead\\src\\main\\java\\halstead.stg");
+        ST st = templates.getInstanceOf("parameter");
+        int sumOperator = 0;
+        int sumOperand = 0;
+        for(Map.Entry<String, Integer>  e: mapOPERATOR.entrySet()){
+            sumOperator += e.getValue();
+        }
+        for(Map.Entry<String, Integer>  e: mapOPERAND.entrySet()){
+            sumOperand += e.getValue();
+        }
+
+        st.add("n1", mapOPERATOR.size());
+
+        st.add("n2",  mapOPERAND.size());
+
+        st.add("N1", sumOperator);
+
+        st.add("N2", sumOperand);
+
+
+        return st;
+    }
+
+    public ST metriken(){
+        STGroup templates = new STGroupFile("G:\\InfProjekte\\Halstead\\src\\main\\java\\halstead.stg");
+        ST st = templates.getInstanceOf("metriken");
+        ST parameter = parameter();
+
+        int N = (int) parameter.getAttribute("N1") + (int) parameter.getAttribute("N2");
+        st.add("N", N);
+
+        int n = (int) parameter.getAttribute("n1") + (int) parameter.getAttribute("n2");
+        st.add("n", n);
+
+        double V = N * (Math.log(n) /Math.log(2));
+        st.add("V", V);
+
+        double n1 = (int) parameter.getAttribute("n1");
+        double N2 = (int) parameter.getAttribute("N2");
+        double n2 = (int) parameter.getAttribute("n2");
+        double D = (n1/2) * (N2/n2);
+        st.add("D", D);
+
+        double E = V * D;
+        st.add("E", E);
+
+        return st;
+    }
 
 }
